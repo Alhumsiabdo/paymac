@@ -5,8 +5,7 @@ namespace App\Repository\Eloquent;
 use App\Models\Blog;
 use App\Repository\BlogRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class BlogRepository implements BlogRepositoryInterface
 {
@@ -38,35 +37,67 @@ class BlogRepository implements BlogRepositoryInterface
             $blog->user_id = $user_id;
 
             $blog->save();
+            return true;
 
         } catch (\Exception $e) {
             return false;
         }
     }
 
-    public function updateBlog(array $blogData)
+    public function updateBlog(array $data)
     {
-        $blogId = $blogData['id'];
-        dd($blogId);
 
+        $blogId = $data['id'];
+
+        $blog = Blog::findOrFail($blogId);
+
+        $fillableColumns = ['title', 'content', 'excerpt'];
+
+        $currentValues = $blog->only($fillableColumns);
+
+        $updatesProvided = false;
+        foreach ($fillableColumns as $column) {
+            if (array_key_exists($column, $data) && $data[$column] !== null) {
+                $updatesProvided = true;
+                break;
+            }
+        }
+
+        if (!$updatesProvided) {
+            return [
+                'blog' => $currentValues,
+                'message' => 'No updates provided. Retrieved the current blog data.',
+                'code' => 200
+            ];
+        }
+
+        foreach ($fillableColumns as $column) {
+            if (array_key_exists($column, $data) && $data[$column] !== null) {
+                $blog->{$column} = $data[$column];
+            }
+        }
+
+        $blog->save();
+        return [
+            'blog' => $blog->refresh()->only($fillableColumns),
+            'message' => 'Blog updated successfully',
+            'code' => 200
+        ];
+    }
+
+    public function deleteBlog($blogId, $userId)
+    {
         try {
             $blog = Blog::findOrFail($blogId);
-            dd($blog);
+            
+            if ($blog->user_id !== $userId) {
+                return false; // Indicate that deletion is not allowed for this user
+            }
 
-            $blog->title = $blogData['title'];
-            $blog->content = $blogData['content'];
-            $blog->excerpt = $blogData['excerpt'];
-            $blog->user_id = auth()->id();
-
-            $blog->save();
-
-            cache::forget('blog_' . $blogId);
-
-            return $blog;
+            $blog->delete();
+            return true;
         } catch (\Exception $e) {
-            Log::error('Error updating blog: ' . $e->getMessage());
-            return false;
+            throw $e;
         }
     }
-
 }

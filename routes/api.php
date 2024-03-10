@@ -28,6 +28,7 @@ Route::group(['middleware' => 'api','prefix' => 'auth'], function () {
         // Blog CRUD operations
             Route::get('getUserBlogs', [BlogController::class, 'getUserBlogs']);
             Route::post('createBlog', [BlogController::class, 'createBlog']);
-            Route::put('updateBlog', [BlogController::class, 'updateBlog']);
+            Route::post('updateBlog', [BlogController::class, 'updateBlog']);
+            Route::post('deleteBlog', [BlogController::class, 'deleteBlog']);
     });
 });

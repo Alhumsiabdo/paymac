@@ -8,8 +8,8 @@ Interface BlogRepositoryInterface {
 
     public function createBlog(array $blogData);
 
-    public function updateBlog(array $blogData);
+    public function updateBlog(array $data);
 
-    // public function delete($id);
+    public function deleteBlog($blogId, $userId);
 
 }
