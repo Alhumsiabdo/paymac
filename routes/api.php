@@ -26,6 +26,7 @@ Route::group(['middleware' => 'api','prefix' => 'auth'], function () {
 
     Route::group(['middleware' => 'auth'], function () {
         // Blog CRUD operations
+            Route::get('getAllBlogs', [BlogController::class, 'index']);
             Route::get('getUserBlogs', [BlogController::class, 'getUserBlogs']);
             Route::post('createBlog', [BlogController::class, 'createBlog']);
             Route::post('updateBlog', [BlogController::class, 'updateBlog']);

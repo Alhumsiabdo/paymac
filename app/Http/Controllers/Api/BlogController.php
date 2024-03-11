@@ -8,7 +8,10 @@ use App\Http\Requests\BlogUpdateRequest;
 use App\Repository\Eloquent\BlogRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class BlogController extends Controller
@@ -70,7 +73,7 @@ class BlogController extends Controller
     {
         try {
             $blogId = $request->id;
-            $userId = auth()->user()->id; // Assuming you're using Laravel's authentication system
+            $userId = auth()->user()->id;
 
             $deleted = $this->blogRepository->deleteBlog($blogId, $userId);
 
@@ -81,8 +84,21 @@ class BlogController extends Controller
             }
         } catch (QueryException $e) {
             return response()->json(['message' => 'Database error: ' . $e->getMessage()], 500);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['message' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function index($page = 1): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            $searchQuery = request()->input('search');
+
+            $posts = $this->blogRepository->getAllPaginated($page, null, $userId, $searchQuery);
+            return response()->json($posts);
+        } catch (QueryException $e) {
+            return response()->json(['error' => 'Error retrieving posts.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

@@ -5,6 +5,7 @@ namespace App\Repository\Eloquent;
 use App\Models\Blog;
 use App\Repository\BlogRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 
 class BlogRepository implements BlogRepositoryInterface
@@ -89,14 +90,36 @@ class BlogRepository implements BlogRepositoryInterface
     {
         try {
             $blog = Blog::findOrFail($blogId);
-            
+
             if ($blog->user_id !== $userId) {
-                return false; // Indicate that deletion is not allowed for this user
+                return false;
+            } else {
+                $blog->delete();
+                return true;
+            }
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function getAllPaginated($page = 1, $perPage = 12, $userId = null, $searchQuery = null)
+    {
+        try {
+            $query = Blog::query();
+
+            if ($userId !== null) {
+                $query->where('user_id', $userId);
             }
 
-            $blog->delete();
-            return true;
-        } catch (\Exception $e) {
+            if ($searchQuery !== null) {
+                $query->where(function ($q) use ($searchQuery) {
+                    $q->where('title', 'like', "%$searchQuery%")
+                        ->orWhere('content', 'like', "%$searchQuery%");
+                });
+            }
+
+            return $query->paginate($perPage, ['*'], 'page', $page);
+        } catch (QueryException $e) {
             throw $e;
         }
     }

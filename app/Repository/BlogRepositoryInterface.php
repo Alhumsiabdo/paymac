@@ -12,4 +12,6 @@ Interface BlogRepositoryInterface {
 
     public function deleteBlog($blogId, $userId);
 
+    public function getAllPaginated($page = 1, $perPage = 12, $userId = null, $searchQuery = null);
+
 }
