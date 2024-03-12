@@ -6,7 +6,6 @@ use App\Models\Blog;
 use App\Repository\BlogRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Auth;
 
 class BlogRepository implements BlogRepositoryInterface
 {
