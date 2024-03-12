@@ -20,6 +20,8 @@ class AuthRepository implements AuthRepositoryInterface
         $user->email = $email;
         $user->password = bcrypt($password);
         $user->save();
+
+        return true;
     }
 
     public function login(array $credentials)
